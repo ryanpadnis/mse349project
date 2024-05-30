@@ -40,7 +40,7 @@ risk_constraint = parameters["sigma"].values[0]
 num_folds = 10
 
 # Define a list of alpha values to try
-alphas = [0.002, 0.003,0.004,0.005,0.006,0.007,0.008]
+
 
 
 
@@ -57,7 +57,16 @@ for train_index, test_index in kf.split(R):
     # Initialize Lasso regression model
     alphas, _, coefs = lars_path(X_train, y_train)
     # Fit the model
-    plt.figure(figsize=(10, 6))
+
+    l1_norms = np.sum(np.abs(coefs), axis=0)
+    # Plot alphas against the L1 norms
+    """plt.figure(figsize=(10, 6))
+    plt.plot(alphas, l1_norms)
+    plt.xlabel('Alpha')
+    plt.ylabel('L1 Norm of Coefficients')
+    plt.title('Alpha vs L1 Norm of Coefficients')
+    plt.gca().invert_xaxis()  # LARS path convention: alphas are plotted in reverse order
+    plt.show()"""
 
     risks = []
     for i in range(alphas.shape[0]):
@@ -68,13 +77,23 @@ for train_index, test_index in kf.split(R):
     closest_alpha = alphas[closest_risk_index]
     zetas.append(closest_alpha)
 
-optimal_lambda = np.mean(zetas)
+    optimal_lambda = np.mean(zetas)
 
 #find closest to optimal_lambda now, that is our portfolio
 alphas, _, coefs = lars_path(R, r_c)
 closest_alpha_index = np.argmin(np.abs(alphas - optimal_lambda))
 closest_alpha = alphas[closest_alpha_index]
 w_star = coefs[:, closest_alpha_index]
+print(optimal_lambda)
+plt.figure(figsize=(10, 6))
+plt.plot(alphas, risks)
+plt.ylim(0, 3)
+plt.xlim(0, 0.03)
+plt.xlabel('Alpha')
+plt.ylabel('L1 Norm of Coefficients')
+plt.title('Alpha vs Portfolio Risk')
+plt.savefig('alphas.png')
+plt.show()
 
 weighted = w_star.T@mean
 

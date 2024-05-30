@@ -45,6 +45,10 @@ sampled_integers = random.sample(range(N), n)
 select_tickers = tickers[sampled_integers] #100 different assets out of the 500 selected at random
 select_prices = pd.DataFrame(0.0, index = monthly_returns.index, columns = select_tickers)
 for ticker in select_tickers:
+
+
+
+
     select_prices[ticker] = monthly_returns[ticker]
 
 select_prices.to_csv('RUSS2000_monthly_returns')
