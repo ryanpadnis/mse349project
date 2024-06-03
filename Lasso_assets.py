@@ -3,23 +3,23 @@ import pandas as pd
 
 
 
-parameters = pd.read_csv("maxser_asset_parameters.csv")
-optimal_weights = pd.read_csv("optimal.csv")
-R = pd.read_csv("excess_returns_assets.csv")
+parameters = pd.read_csv("nasdaq_maxser_asset_parameters.csv")
+optimal_weights = pd.read_csv("nasdaq_optimal.csv")
+R = pd.read_csv("nasdaq_excess_returns_assets.csv")
 R.set_index("Date", inplace=True)
 R = R.values
-print(R)
+
 optimal_weights.set_index("Unnamed: 0", inplace=True)
 optimal_weights = optimal_weights.values
 theta = parameters["theta_adj"].values[0]
 sigma = parameters["sigma"].values[0]
 theta_s = parameters["theta_s"].values[0]
-
-mu = pd.read_csv("mu_assets.csv")
+print(sigma)
+mu = pd.read_csv("nasdaq_mu_assets.csv")
 mu.set_index("Unnamed: 0", inplace=True)
 N = mu.shape[0]
 #consider following portfolios for baseline comparison
-Sigma =pd.read_csv("Sigma_assets.csv")
+Sigma =pd.read_csv("nasdaq_Sigma_assets.csv")
 Sigma.set_index("Unnamed: 0", inplace=True)
 
 mu = mu.values.reshape(mu.shape[0])
@@ -71,11 +71,11 @@ import pingouin as pg
 
 # Perform Mardia's test
 mardia_test = pg.multivariate_normality(R, alpha=0.05)
-print(mardia_test)
+
 
 
 #explain here why this doesn't converge for russel 2000
-"""kan_sharpe, std_sharpe_kan, kan_portfolio_risk = evaluate_portfolio(T, num_simulations, kan_weights, mu, Sigma)
+kan_sharpe, std_sharpe_kan, kan_portfolio_risk = evaluate_portfolio(T, num_simulations, kan_weights, mu, Sigma)
 optimal_sharpe, std_sharpe_optimal, optimal_portfolio_risk = evaluate_portfolio(T, num_simulations, optimal_weights, mu, Sigma)
 benchmark_portfolio = ((sigma/np.sqrt(theta))*np.linalg.inv(Sigma)@mu).reshape(-1,1)#plugin using the adjusted theta
 benchmark_sharpe, std_sharpe_benchmark, benchmark_portfolio_risk = evaluate_portfolio(T, num_simulations, benchmark_portfolio, mu, Sigma)
@@ -102,7 +102,7 @@ print(std_sharpe_kan)
 print("kan and zhao portfolio: ")#regulafr plugin theoretuical what markowitz says
 print(plugin_sharpe)
 print(plugin_portfolio_risk)
-print(std_sharpe_plugin)"""
+print(std_sharpe_plugin)
 
 
 #kan and zhao three fund portfolio

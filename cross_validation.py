@@ -15,22 +15,22 @@ from sklearn.model_selection import KFold
 from scipy.optimize import minimize
 
 # Load data
-mean = pd.read_csv("mu_assets.csv")
+mean = pd.read_csv("nasdaq_mu_assets.csv")
 assets = mean.columns
 mean.set_index("Unnamed: 0", inplace=True)
 mean = mean.values.T[0]
 
-cov = pd.read_csv("Sigma_assets.csv")
+cov = pd.read_csv("nasdaq_Sigma_assets.csv")
 cov.set_index("Unnamed: 0", inplace=True)
 Sigma = cov.values
 
-R = pd.read_csv("excess_returns_assets.csv")
+R = pd.read_csv("nasdaq_excess_returns_assets.csv")
 R.set_index("Date", inplace=True)
 T = R.shape[0]
 N = R.shape[1]
 R = R.values
 
-parameters = pd.read_csv("maxser_asset_parameters.csv")
+parameters = pd.read_csv("nasdaq_maxser_asset_parameters.csv")
 r_c = parameters["r_c"].values[0]
 r_c = r_c * np.ones(T)
 
@@ -60,13 +60,6 @@ for train_index, test_index in kf.split(R):
 
     l1_norms = np.sum(np.abs(coefs), axis=0)
     # Plot alphas against the L1 norms
-    """plt.figure(figsize=(10, 6))
-    plt.plot(alphas, l1_norms)
-    plt.xlabel('Alpha')
-    plt.ylabel('L1 Norm of Coefficients')
-    plt.title('Alpha vs L1 Norm of Coefficients')
-    plt.gca().invert_xaxis()  # LARS path convention: alphas are plotted in reverse order
-    plt.show()"""
 
     risks = []
     for i in range(alphas.shape[0]):
@@ -86,15 +79,14 @@ closest_alpha = alphas[closest_alpha_index]
 w_star = coefs[:, closest_alpha_index]
 print(optimal_lambda)
 plt.figure(figsize=(10, 6))
-plt.plot(alphas, risks)
-plt.ylim(0, 3)
-plt.xlim(0, 0.03)
-plt.xlabel('Alpha')
-plt.ylabel('L1 Norm of Coefficients')
-plt.title('Alpha vs Portfolio Risk')
-plt.savefig('alphas.png')
-plt.show()
+plt.plot(alphas, risks[:95])
 
+plt.xlabel('Alpha')
+plt.ylabel('Risk')
+plt.title('Alpha vs Portfolio Risk')
+plt.savefig('nasdaq_alphas.png')
+plt.show()
+print(w_star)
 weighted = w_star.T@mean
 
 expected_return = np.dot(w_star, mean)
@@ -108,72 +100,7 @@ portfolio_std_dev = np.sqrt(portfolio_variance)
 sharpe_ratio = (expected_return) / portfolio_std_dev
 
 optimal = pd.DataFrame(w_star)
-optimal.to_csv('optimal.csv')
+optimal.to_csv('nasdaq_optimal.csv')
 
 
 
-
-
-"""
-old implementation using lasso, doesn't work though
-# Step 3: Perform 10-fold Cross-Validation
-for train_index, test_index in kf.split(R):
-    X_train, X_test = R[train_index], R[test_index]
-    y_train, y_test = r_c[train_index], r_c[test_index]
-    # Step 4: Obtain the whole solution path for Lasso (alpha corresponds to lambda in the context)
-    alphas = np.logspace(-4, 0, 100)  # Range of alphas (lambdas)
-    best_zeta = None
-    min_risk_diff = float('inf')
-
-    for alpha in reversed(alphas):
-        print(alpha)
-        lasso = Lasso(alpha)
-        lasso.fit(X_train, y_train)
-        weights = lasso.coef_
-        print(weights)
-        breakpoint()
-
-        # Calculate the portfolio risk (standard deviation of portfolio returns)
-        portfolio_variance = weights.T @ np.cov(X_train.T) @ weights
-        portfolio_risk = np.sqrt(portfolio_variance)
-
-        # Calculate the difference between portfolio risk and the risk constraint
-        risk_diff = abs(portfolio_risk - risk_constraint)
-
-        if risk_diff < min_risk_diff:
-            min_risk_diff = risk_diff
-            best_zeta = np.sum(np.abs(weights)) / np.linalg.norm(weights, 1)
-
-    zeta_values.append(best_zeta)
-
-# Step 6: Compute the average zeta
-optimal_zeta = np.mean(zeta_values)
-print(f"Optimal zeta: {optimal_zeta}")
-
-# Use optimal zeta to compute final portfolio weights using the whole dataset
-final_alpha = None
-min_risk_diff = float('inf')
-
-for alpha in alphas:
-    lasso = Lasso(alpha=alpha)
-    lasso.fit(R, r_c)
-    weights = lasso.coef_
-
-    portfolio_variance = weights.T @ Sigma @ weights
-    portfolio_risk = np.sqrt(portfolio_variance)
-
-    risk_diff = abs(portfolio_risk - risk_constraint)
-
-    if risk_diff < min_risk_diff:
-        min_risk_diff = risk_diff
-        final_alpha = alpha
-
-lasso_final = Lasso(alpha=final_alpha)
-lasso_final.fit(R, r_c)
-final_weights = lasso_final.coef_
-
-print(f"Final weights: {final_weights}")
-print(f"Final portfolio risk: {np.sqrt(final_weights.T @ Sigma @ final_weights)}")
-
-
-"""

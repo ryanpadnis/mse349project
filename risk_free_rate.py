@@ -12,7 +12,7 @@ def deannualize(annual_rate, periods=12):
 
 def get_risk_free_rate():
     # download 3-month US Treasury bills rates (^IRX represents the 13-week T-Bill)
-    annualized = yf.download("^IRX", start="2002-01-01", end="2022-01-01")["Adj Close"]
+    annualized = yf.download("^IRX", start="2012-01-01", end="2022-01-01")["Adj Close"]
     # De-annualize the daily rates
     daily = annualized.apply(deannualize)
 
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     monthly_rates = rates["monthly"]
     monthly_rates.to_csv("risk_free_rate.csv")
     # insert monthly inflation here
-    CPI = pd.read_csv("CPI.csv")[1:241]
+    CPI = pd.read_csv("CPI.csv")[1:121]
     CPI.set_index('DATE', inplace=True)
     CPI = CPI.pct_change()
     CPI = CPI.fillna(0.0)
